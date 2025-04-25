@@ -71,6 +71,11 @@ Home
   }
 </style>
 
+<!-- Store Django template values as data attributes -->
+<div id="django-data" data-user-auth="{% if user.is_authenticated %}true{% else %}false{% endif %}"
+  data-user-id="{% if user.is_authenticated %}{{ user.id }}{% endif %}" style="display: none;">
+</div>
+
 {% endblock content %}
 {% block body %}
 {% load static %}
@@ -149,12 +154,26 @@ Home
     });
   });
 
-  //find pout the card from local storage
-  if (localStorage.getItem('cart') == null) {
+  // Get Django template values from data attributes
+  const djangoData = document.getElementById('django-data');
+  const isAuthenticated = djangoData.dataset.userAuth === 'true';
+  const userId = djangoData.dataset.userId;
+
+  // Use a user-specific cart key in localStorage
+  const cartKey = isAuthenticated ? `cart_user_${userId}` : 'cart_guest';
+
+  // Find cart from local storage with user-specific key
+  if (localStorage.getItem(cartKey) == null) {
     var cart = {};
   } else {
-    cart = JSON.parse(localStorage.getItem('cart'));
+    cart = JSON.parse(localStorage.getItem(cartKey));
     updateCart(cart);
+  }
+
+  // Clear any old cart data that might be lingering for guest users
+  if (isAuthenticated) {
+    localStorage.removeItem('cart');
+    localStorage.removeItem('cart_guest');
   }
 
   $('.card-actions').on('click', 'button.cart', function () {
@@ -171,7 +190,7 @@ Home
     }
     updateCart(cart);
 
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem(cartKey, JSON.stringify(cart));
     document.getElementById('cart').innerHTML = Object.keys(cart).length;
     console.log("Cart items: " + Object.keys(cart).length);
     document.getElementById("popcart").click();
@@ -248,7 +267,7 @@ Home
   }
 
   function clearCart() {
-    cart = JSON.parse(localStorage.getItem('cart'));
+    cart = JSON.parse(localStorage.getItem(cartKey));
     for (var item in cart) {
       document.getElementById('divpr' + item.substring(2)).innerHTML = `
         <button id="${item}" class="btn-cart cart">
@@ -259,7 +278,7 @@ Home
         </a>
       `;
     }
-    localStorage.clear();
+    localStorage.removeItem(cartKey);
     cart = {};
     updateCart(cart);
     document.getElementById('cart').innerHTML = 0;
@@ -282,7 +301,7 @@ Home
         </a>
       `;
     }
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem(cartKey, JSON.stringify(cart));
     document.getElementById('cart').innerHTML = Object.keys(cart).length;
     console.log(cart);
     updatePopover(cart);
@@ -290,7 +309,7 @@ Home
   }
 
   function decrementQuantity(item) {
-    let cart = JSON.parse(localStorage.getItem('cart'));
+    let cart = JSON.parse(localStorage.getItem(cartKey));
     if (cart[item] && cart[item][0] > 0) {
       cart[item][0] = cart[item][0] - 1;
       document.getElementById('val' + item).innerHTML = cart[item][0];
@@ -313,7 +332,7 @@ Home
   }
 
   function incrementQuantity(item) {
-    let cart = JSON.parse(localStorage.getItem('cart'));
+    let cart = JSON.parse(localStorage.getItem(cartKey));
     if (cart[item]) {
       cart[item][0] = cart[item][0] + 1;
       document.getElementById('val' + item).innerHTML = cart[item][0];

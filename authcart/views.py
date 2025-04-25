@@ -36,12 +36,6 @@ def signup(request):
         token = generate_token.make_token(user)
         activation_link = f"http://127.0.0.1:8000/auth/activate/{uid}/{token}"
         
-        print(f"Debug - Activation Link: {activation_link}")
-        print(f"Debug - User Email: {email}")
-        
-        # Don't add a message here, as it will show up both in activation page and after activation
-        # messages.success(request, "Account created successfully! Use the activation link below.")
-        
         # Pass the activation link directly to the template
         context = {
             'activation_link': activation_link,
@@ -103,12 +97,6 @@ def handlelogin(request):
 def handlelogout(request):
     logout(request)
     messages.info(request,'Logout Success')
-    return redirect('/auth/login')
-    
-# Debug route to test the activation_email_sent.html template
-def test_activation_template(request):
-    test_email = "test@example.com"
-    test_link = "http://127.0.0.1:8000/auth/activate/test-uid/test-token"
-    return render(request, "activation_email_sent.html", 
-                 {'activation_link': test_link, 'user_email': test_email})
+    # Add a context to enable cart clearing via JavaScript
+    return render(request, 'logout_success.html', {'clear_cart': True})
     

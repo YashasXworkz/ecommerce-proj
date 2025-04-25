@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Logout Success{% endblock title %}
+{% block content %}
+
+<div class="logout-success-container">
+  <div class="logout-success-message">
+    <h2>Logout Successful</h2>
+    <p>You have been successfully logged out of your account.</p>
+
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+      <strong>{{message}}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+
+    <p>Redirecting to login page...</p>
+  </div>
+</div>
+
+<style>
+  .logout-success-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+  }
+
+  .logout-success-message {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 500px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .logout-success-message h2 {
+    color: #2c4368;
+    margin-bottom: 20px;
+  }
+
+  .logout-success-message p {
+    color: #555;
+    margin-bottom: 15px;
+  }
+</style>
+
+<script>
+  // Clear the cart data from localStorage
+  localStorage.removeItem('cart');
+  console.log("Cart data cleared from localStorage");
+
+  // Update cart display to zero
+  document.addEventListener('DOMContentLoaded', function () {
+    var cartCountElement = document.getElementById('cart');
+    if (cartCountElement) {
+      cartCountElement.textContent = '0';
+    }
+  });
+
+  // Redirect to login page after a short delay
+  setTimeout(function () {
+    window.location.href = '/auth/login';
+  }, 2000);
+</script>
+
+{% endblock content %}
