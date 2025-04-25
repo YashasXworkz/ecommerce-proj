@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Account Activation{% endblock title %}
+{% block content %}
+<style>
+  .activation-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    color: white;
+    text-align: center;
+  }
+
+  .activation-link {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+    word-break: break-all;
+    text-align: center;
+  }
+
+  .activation-link a {
+    color: #62f079;
+    text-decoration: none;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  p {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+  }
+
+  .login-link {
+    color: #47b2e4;
+    text-decoration: none;
+    margin-top: 1.5rem;
+    display: inline-block;
+  }
+</style>
+
+<div class="activation-container">
+  <h2>Activate Your Account</h2>
+
+  <p>Please use this link to activate your account:</p>
+
+  <div class="activation-link">
+    <a href="{{ activation_link }}">{{ activation_link }}</a>
+  </div>
+
+  <a href="/auth/login/" class="login-link">Return to Login</a>
+</div>
+{% endblock content %}
+{% block body %}
+{% endblock body %}

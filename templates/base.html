@@ -1,0 +1,371 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>
+    {% block title %} {% endblock title %}
+  </title>
+  <meta name="description" content="ecommerce website we deliver product in 1 hours">
+  <meta name="amazon,flipkart,selling,products" content="ecommerce">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap"
+    rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+  <!-- Product Cards CSS -->
+  <link href="{% static 'assets/css/product-cards.css' %}" rel="stylesheet">
+  <!-- Form Styles CSS -->
+  <link href="{% static 'assets/css/form-styles.css' %}" rel="stylesheet">
+
+  <style>
+    /* Custom Toast/Alert Message Styling */
+    .alert {
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      animation: fadeInDown 0.5s ease;
+      position: relative;
+      z-index: 9999;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Styling for specific alert types */
+    .alert-success {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+    }
+
+    .alert-warning {
+      background-color: #fff3cd;
+      border-color: #ffeeba;
+    }
+
+    .alert-info {
+      background-color: #d1ecf1;
+      border-color: #bee5eb;
+    }
+
+    /* Cart Popover Styling */
+    .popover {
+      min-width: 320px;
+      max-width: 320px;
+      border-radius: 8px;
+      box-shadow: 0 5px 30px rgba(0, 0, 0, 0.15);
+      border: none;
+      padding: 0;
+    }
+
+    .popover-body {
+      padding: 0;
+    }
+
+    .cart-popover {
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .cart-header {
+      background-color: #2c4368;
+      color: white;
+      padding: 12px 15px;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cart-header h5 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .cart-count {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 3px 8px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .cart-items-container {
+      max-height: 250px;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+
+    .cart-item {
+      padding: 8px 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .cart-item-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .cart-item-subtotal {
+      font-weight: 600;
+      color: #2c4368;
+    }
+
+    .cart-total {
+      background-color: #f9f9f9;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #eee;
+      font-weight: 600;
+    }
+
+    .cart-total-amount {
+      color: #e63946;
+    }
+
+    .cart-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 15px;
+    }
+
+    .btn-checkout,
+    .btn-clear {
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-checkout {
+      background-color: #28a745;
+      color: white;
+      text-decoration: none;
+    }
+
+    .btn-checkout:hover {
+      background-color: #218838;
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+      color: white;
+    }
+
+    .btn-clear {
+      background-color: #343a40;
+      color: white;
+    }
+
+    .btn-clear:hover {
+      background-color: #23272b;
+      box-shadow: 0 4px 8px rgba(52, 58, 64, 0.2);
+    }
+
+    .empty-cart {
+      padding: 20px;
+      text-align: center;
+      color: #6c757d;
+    }
+
+    .empty-cart-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      opacity: 0.4;
+    }
+  </style>
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+
+      <a href="/" class="logo d-flex align-items-center me-auto">
+        <h1 class="sitename">Shop cart</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="/" class="active">Home</a></li>
+          <li><a href="/checkout/">Checkout</a></li>
+          <button type="button" class="cart-button" id="popcart" data-container="body" data-toggle="popover"
+            data-placement="bottom" data-html="true">
+            Cart (<span id="cart">0</span>)
+          </button>
+
+          {% if user.is_authenticated %}
+          <li class="dropdown"><a href="#"><span>Account</span>
+              <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+
+            <ul>
+              <li><a href="/profile">My Profile</a></li>
+              <li><a href="/auth/logout">Logout</a></li>
+            </ul>
+          </li>
+          {% else %}
+          <li><a href="/auth/login" class="signin-link">SignIn</a></li>
+          <li><a href="/auth/signup" class="signup-link">Sign Up</a></li>
+          {% endif %}
+
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Hero Section -->
+    <section id="hero" class="hero section dark-background">
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-lg-6 order-4 order-lg-1 d-flex flex-column justify-content-center" data-aos="zoom-out">
+
+            {% block content %}
+
+
+
+
+            {% endblock content %}
+          </div>
+          <div class="col-lg-6 order-4 order-lg-2 hero-img" data-aos="zoom-out" data-aos-delay="200">
+            <img src="{% static 'assets/img/hero-img.png' %}" class="img-fluid animated" alt="">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main id="main">
+      {% block body %}
+      {% endblock body %}
+    </main>
+  </main>
+
+  <footer id="footer" class="footer">
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="/" class="d-flex align-items-center">
+            <span class="sitename">Shop Cart</span>
+          </a>
+          <p>Your trusted online shopping destination</p>
+          <p><strong>Contact:</strong> support@shopcart.com</p>
+        </div>
+      </div>
+    </div>
+    <div class="container copyright text-center mt-4">
+      <p>&copy; <strong>Shop Cart</strong>. All Rights Reserved.</p>
+      <div class="credits">
+        Designed by Shop Cart Team
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
+      class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+  <style>
+    .signin-link {
+      color: #47b2e4 !important;
+    }
+
+    .signin-link:hover {
+      color: #73c5eb !important;
+    }
+
+    .signup-link {
+      background-color: #fff;
+      color: #2c4368 !important;
+      padding: 8px 20px !important;
+      border-radius: 4px;
+      margin-left: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .signup-link:hover {
+      background-color: #f0f0f0;
+      transform: translateY(-2px);
+    }
+
+    .cart-button {
+      background-color: #e63946;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin: 0 15px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .cart-button:hover {
+      background-color: #c1121f;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+
+</body>
+
+</html>

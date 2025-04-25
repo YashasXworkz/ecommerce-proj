@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% block title %}
+Home
+{% endblock title %}
+{% block content %}
+
+{% for message in messages %}
+<div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+  <strong>{{message}}</strong>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+
+<div class="hero-content" data-aos="fade-up">
+  <h1>Welcome to ShopSmart</h1>
+  <p class="hero-text">Discover premium products at unbeatable prices. Quality guaranteed with fast shipping!</p>
+  <div class="hero-btns">
+    <a href="#portfolio" class="shop-now-btn">Shop Now</a>
+  </div>
+</div>
+
+<style>
+  .hero-content {
+    text-align: left;
+    color: white;
+  }
+
+  .hero-content h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .hero-text {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+  }
+
+  .hero-btns {
+    margin-top: 20px;
+  }
+
+  .shop-now-btn {
+    display: inline-block;
+    background-color: #e74c3c;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid #e74c3c;
+  }
+
+  .shop-now-btn:hover {
+    background-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    .hero-content h1 {
+      font-size: 2.2rem;
+    }
+
+    .hero-text {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+{% endblock content %}
+{% block body %}
+{% load static %}
+
+<!-- Portfolio Section -->
+<section id="portfolio" class="portfolio section">
+
+  <!-- Section Title -->
+  <div class="container">
+    <div class="section-title" data-aos="fade-up">
+      <h2>Welcome to Shop</h2>
+      <h3>Check Our <span>Products</span></h3>
+    </div>
+  </div>
+
+  {% for product, range, nSlides in allProds %}
+
+  <div class="container category-section">
+    <h3 class="category-title">
+      <span>{{product.0.category}}</span> Collection
+    </h3>
+
+    <div class="row">
+      {% for i in product %}
+      <div class="col-md-3 col-sm-6 mb-4">
+        <div class="product-card">
+          <div class="product-img">
+            <img src="/media/{{i.image}}" alt="{{i.product_name}}" />
+          </div>
+          <div class="card-body">
+            <h5 class="product-title" id="namepr{{i.id}}">{{i.product_name}}</h5>
+            <p class="product-desc">{{i.desc|slice:"0:100"}}...</p>
+            <div class="product-price" id="pricepr{{i.id}}">{{i.price}}</div>
+
+            <div class="card-actions" id="divpr{{i.id}}" class="divpr">
+              <button id="pr{{i.id}}" class="btn-cart cart">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+              </button>
+              <a href="/media/{{i.image}}" class="btn-view">
+                <i class="bi bi-eye"></i> View
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</section><!-- /Portfolio Section -->
+
+<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+  crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+  integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+  integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+<script>
+  // Smooth scroll for anchor links
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80, // Offset for header
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  });
+
+  //find pout the card from local storage
+  if (localStorage.getItem('cart') == null) {
+    var cart = {};
+  } else {
+    cart = JSON.parse(localStorage.getItem('cart'));
+    updateCart(cart);
+  }
+
+  $('.card-actions').on('click', 'button.cart', function () {
+    var idstr = this.id.toString();
+    console.log("Button clicked, ID: " + idstr);
+
+    if (cart[idstr] != undefined) {
+      qty = cart[idstr][0] + 1;
+    } else {
+      qty = 1;
+      name = document.getElementById('namepr' + idstr.substring(2)).innerHTML;
+      price = document.getElementById('pricepr' + idstr.substring(2)).innerHTML;
+      cart[idstr] = [qty, name, price];
+    }
+    updateCart(cart);
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('cart').innerHTML = Object.keys(cart).length;
+    console.log("Cart items: " + Object.keys(cart).length);
+    document.getElementById("popcart").click();
+  });
+
+  $('#popcart').popover();
+
+  updatePopover(cart);
+  function updatePopover(cart) {
+    console.log('we are inside update popover');
+
+    var popStr = `
+      <div class="cart-popover">
+        <div class="cart-header">
+          <h5 style="color: white;">Cart Items</h5>
+          <span class="cart-count" style="color: white;">${Object.keys(cart).length} item(s)</span>
+        </div>
+        <div class="cart-items-container">`;
+
+    var total = 0;
+    var i = 1;
+    if (Object.keys(cart).length == 0) {
+      popStr += `<div class="empty-cart">
+                  <div class="empty-cart-icon">
+                    <i class="bi bi-cart"></i>
+                  </div>
+                  <p>Your cart is empty</p>
+                </div>`;
+    } else {
+      for (var item in cart) {
+        var itemPrice = parseFloat(cart[item][2].replace(/[^\d.-]/g, ''));
+        var itemTotal = itemPrice * cart[item][0];
+        total += itemTotal;
+
+        popStr += `
+          <div class="cart-item">
+            <div class="cart-item-name">
+              ${document.getElementById('namepr' + item.substring(2)).innerHTML.slice(0, 25)}${document.getElementById('namepr' + item.substring(2)).innerHTML.length > 25 ? '...' : ''}
+            </div>
+            <div class="cart-item-details">
+              <div class="cart-item-quantity">
+                <span>${cart[item][0]} × ${cart[item][2]}</span>
+              </div>
+              <div class="cart-item-subtotal">₹${itemTotal.toFixed(2)}</div>
+            </div>
+          </div>`;
+      }
+    }
+
+    popStr += `</div>`;
+
+    if (Object.keys(cart).length > 0) {
+      popStr += `
+        <div class="cart-total">
+          <div class="cart-total-label">Total:</div>
+          <div class="cart-total-amount">₹${total.toFixed(2)}</div>
+        </div>`;
+    }
+
+    popStr += `
+      <div class="cart-actions">
+        <a href="/checkout/" class="btn-checkout" id="checkout">
+          <i class="bi bi-credit-card"></i> Checkout
+        </a>
+        <button class="btn-clear" onclick="clearCart()" id="clearCart">
+          <i class="bi bi-trash"></i> Clear Cart
+        </button>
+      </div>
+    </div>`;
+
+    document.getElementById('popcart').setAttribute('data-content', popStr);
+    $('#popcart').popover('show');
+    document.getElementById("popcart").click();
+  }
+
+  function clearCart() {
+    cart = JSON.parse(localStorage.getItem('cart'));
+    for (var item in cart) {
+      document.getElementById('divpr' + item.substring(2)).innerHTML = `
+        <button id="${item}" class="btn-cart cart">
+          <i class="bi bi-cart-plus"></i> Add to Cart
+        </button>
+        <a href="/media/${item.substring(2)}" class="btn-view">
+          <i class="bi bi-eye"></i> View
+        </a>
+      `;
+    }
+    localStorage.clear();
+    cart = {};
+    updateCart(cart);
+    document.getElementById('cart').innerHTML = 0;
+    document.getElementById("popcart").click();
+    document.getElementById("popcart").click();
+  }
+
+  function updateCart(cart) {
+    var sum = 0;
+    for (var item in cart) {
+      sum = sum + cart[item][0];
+      document.getElementById('divpr' + item.substring(2)).innerHTML = `
+        <div class="quantity-control">
+          <button id='minus${item}' class="btn-quantity minus" onclick="decrementQuantity('${item}')">-</button>
+          <span id='val${item}' class="quantity-display">${cart[item][0]}</span>
+          <button id='plus${item}' class="btn-quantity plus" onclick="incrementQuantity('${item}')">+</button>
+        </div>
+        <a href="/media/${cart[item][1]}" class="btn-view">
+          <i class="bi bi-eye"></i> View
+        </a>
+      `;
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('cart').innerHTML = Object.keys(cart).length;
+    console.log(cart);
+    updatePopover(cart);
+    document.getElementById("popcart").click();
+  }
+
+  function decrementQuantity(item) {
+    let cart = JSON.parse(localStorage.getItem('cart'));
+    if (cart[item] && cart[item][0] > 0) {
+      cart[item][0] = cart[item][0] - 1;
+      document.getElementById('val' + item).innerHTML = cart[item][0];
+
+      if (cart[item][0] === 0) {
+        delete cart[item];
+        document.getElementById('divpr' + item.substring(2)).innerHTML = `
+          <button id="pr${item.substring(2)}" class="btn-cart cart">
+            <i class="bi bi-cart-plus"></i> Add to Cart
+          </button>
+          <a href="/media/${item.substring(2)}" class="btn-view">
+            <i class="bi bi-eye"></i> View
+          </a>
+        `;
+        document.getElementById('cart').innerHTML = Object.keys(cart).length;
+      }
+
+      updateCart(cart);
+    }
+  }
+
+  function incrementQuantity(item) {
+    let cart = JSON.parse(localStorage.getItem('cart'));
+    if (cart[item]) {
+      cart[item][0] = cart[item][0] + 1;
+      document.getElementById('val' + item).innerHTML = cart[item][0];
+      updateCart(cart);
+    }
+  }
+</script>
+
+{% endblock body %}

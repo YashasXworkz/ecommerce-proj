@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock title %}
+{% block content %}
+
+{% for message in messages %}
+<div class="p-5">
+  <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+    <strong>{{message}}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+</div>
+{% endfor %}
+
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>My Profile</h1>
+    <div class="user-info">
+      <h3>Welcome, {{ request.user.username }}</h3>
+      <p>Email: {{ request.user.email }}</p>
+    </div>
+  </div>
+
+  <div class="orders-section">
+    <h2>My Orders</h2>
+    {% if orders %}
+    <div class="orders-list">
+      {% for order in orders %}
+      <div class="order-card">
+        <div class="order-header">
+          <div class="order-id">Order #{{ order.order_id }}</div>
+          <div class="order-date">{{ order.timestamp|date:"F j, Y" }}</div>
+        </div>
+        <div class="order-body">
+          <div class="order-details-container">
+            <div class="amt-status-row">
+              <div class="amount-container">
+                <span class="detail-label">Amount:</span>
+                <span class="detail-value">Rs. {{ order.amount }}</span>
+              </div>
+              <div class="status-container">
+                <span class="detail-label">Status:</span>
+                <span
+                  class="detail-value status-badge {% if order.paymentstatus == 'PAID' %}paid{% else %}pending{% endif %}">
+                  {{ order.paymentstatus|default:"Pending" }}
+                </span>
+              </div>
+            </div>
+
+            <div class="transaction-shipping-row">
+              <div class="transaction-col">
+                <div class="detail-item no-border">
+                  <span class="detail-label">Transaction ID:</span>
+                  <span class="detail-value transaction-id">{{ order.oid|default:"-" }}</span>
+                </div>
+              </div>
+              <div class="shipping-col">
+                <div class="shipping-container">
+                  <div class="shipping-header">Shipping Details</div>
+                  <div class="shipping-content">
+                    <p>{{ order.name }}</p>
+                    <p>{{ order.address1 }}</p>
+                    {% if order.address2 %}<p>{{ order.address2 }}</p>{% endif %}
+                    <p>{{ order.city }}, {{ order.state }} {{ order.zip_code }}</p>
+                    <p>Phone: {{ order.phone }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-orders">
+      <p>You haven't placed any orders yet.</p>
+      <a href="/" class="btn btn-primary">Start Shopping</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .profile-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .profile-header h1 {
+    color: #fff;
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+
+  .user-info {
+    background-color: #2c4368;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .user-info h3 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  .user-info p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0;
+  }
+
+  .orders-section {
+    margin-top: 30px;
+  }
+
+  .orders-section h2 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .order-card {
+    background-color: #2c4368;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    max-width: 550px;
+    margin: 0 auto 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: #fff;
+  }
+
+  .order-id {
+    font-weight: bold;
+    font-family: monospace;
+    font-size: 14px;
+  }
+
+  .order-date {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
+
+  .order-body {
+    padding: 15px;
+  }
+
+  .order-details-container {
+    width: 100%;
+  }
+
+  .amt-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+
+  .amount-container,
+  .status-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-container .detail-label {
+    margin-left: 10px;
+  }
+
+  .transaction-shipping-row {
+    display: flex;
+    margin-top: 10px;
+  }
+
+  .transaction-col {
+    flex: 0.4;
+    padding-right: 15px;
+  }
+
+  .shipping-col {
+    flex: 0.6;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 15px;
+  }
+
+  .shipping-container {
+    flex: 0.6;
+    padding-left: 15px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .shipping-header {
+    color: #fff;
+    margin-bottom: 6px;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  .detail-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
+
+  .detail-value {
+    font-weight: 500;
+    color: #fff;
+    word-break: break-all;
+    font-size: 14px;
+  }
+
+  .status-badge {
+    padding: 2px 8px;
+    border-radius: 15px;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  .status-badge.paid {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .status-badge.pending {
+    background-color: #ff9800;
+    color: white;
+  }
+
+  .transaction-id {
+    font-size: 13px;
+    display: block;
+    margin-top: 5px;
+    word-break: break-all;
+  }
+
+  .shipping-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 3px;
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .no-orders {
+    text-align: center;
+    padding: 50px 0;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .no-orders p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+  }
+
+  @media (max-width: 767px) {
+    .order-body {
+      flex-direction: column;
+    }
+
+    .shipping-container {
+      padding-left: 0;
+      border-left: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 20px;
+      margin-top: 10px;
+    }
+
+    .transaction-shipping-row {
+      flex-direction: column;
+    }
+
+    .transaction-col {
+      padding-right: 0;
+      margin-bottom: 15px;
+    }
+
+    .shipping-col {
+      padding-left: 0;
+      border-left: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 15px;
+    }
+
+    .shipping-container {
+      padding-left: 0;
+      border-left: none;
+    }
+  }
+</style>
+{% endblock content %}
