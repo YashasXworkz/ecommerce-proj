@@ -4,7 +4,6 @@ from django.contrib import messages
 from math import ceil
 from ecommerceapp import keys
 from django.conf import settings
-MERCHANT_KEY=keys.MK
 import json
 from django.views.decorators.csrf import  csrf_exempt
 import stripe
