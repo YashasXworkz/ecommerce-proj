@@ -34,7 +34,9 @@ def signup(request):
         # Generate activation link
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = generate_token.make_token(user)
-        activation_link = f"http://127.0.0.1:8000/auth/activate/{uid}/{token}"
+        domain = getattr(settings, 'SITE_DOMAIN', '127.0.0.1:8000')
+        protocol = 'https' if domain != '127.0.0.1:8000' else 'http'
+        activation_link = f"{protocol}://{domain}/auth/activate/{uid}/{token}"
         
         # Pass the activation link directly to the template
         context = {

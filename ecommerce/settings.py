@@ -33,6 +33,10 @@ DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,shopcart-sgk7.onrender.com').split(',')
 
+# Site domain for URL generation
+SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'shopcart-sgk7.onrender.com')
+SITE_URL = os.getenv('SITE_URL', f'https://{SITE_DOMAIN}')
+
 
 # Application definition
 
