@@ -366,6 +366,32 @@
     }
   </style>
 
+  <!-- Add this listener to handle cart updates across the site -->
+  <script>
+    // Add listener for cart update events
+    document.addEventListener('DOMContentLoaded', function () {
+      // Listen for custom cart update events
+      document.addEventListener('cart-updated', function () {
+        // Get the cart element and update it
+        const cartElement = document.getElementById('cart');
+
+        // Check if user is authenticated
+        const djangoData = document.getElementById('django-data');
+        const isAuthenticated = djangoData ? djangoData.dataset.userAuth === 'true' : false;
+        const userId = djangoData ? djangoData.dataset.userId : '';
+
+        // Use the appropriate cart key
+        const cartKey = isAuthenticated ? `cart_user_${userId}` : 'cart_guest';
+
+        // Update cart count display
+        if (cartElement) {
+          const cart = localStorage.getItem(cartKey) ? JSON.parse(localStorage.getItem(cartKey)) : {};
+          cartElement.textContent = Object.keys(cart).length || '0';
+        }
+      });
+    });
+  </script>
+
 </body>
 
 </html>

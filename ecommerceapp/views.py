@@ -64,14 +64,38 @@ def checkout(request):
         state = request.POST.get('state', '')
         zip_code = request.POST.get('zip_code', '')
         phone = request.POST.get('phone', '')
-        Order = Orders(items_json=items_json,name=name,amount=amount, email=email, address1=address1,address2=address2,city=city,state=state,zip_code=zip_code,phone=phone)
-        Order.save()
-        update = OrderUpdate(order_id=Order.order_id,update_desc="the order has been placed")
-        update.save()
-        thank = True
+        payment_method = request.POST.get('payment_method', 'online')  # Default to online if not specified
         
-        # Redirect to Stripe payment page
-        return redirect(f'/stripe_payment/{Order.order_id}/')
+        # Create the order
+        Order = Orders(items_json=items_json, name=name, amount=amount, email=email, 
+                      address1=address1, address2=address2, city=city, state=state, 
+                      zip_code=zip_code, phone=phone)
+        Order.save()
+        
+        # Create order update
+        update = OrderUpdate(order_id=Order.order_id, update_desc="The order has been placed")
+        update.save()
+        
+        # Handle different payment methods
+        if payment_method == 'cod':
+            # Cash on Delivery - Mark as pending payment
+            Order.paymentstatus = 'COD'
+            Order.save()
+            
+            # Create a confirmation update
+            cod_update = OrderUpdate(order_id=Order.order_id, 
+                                    update_desc="Your order has been placed successfully (Cash on Delivery)")
+            cod_update.save()
+            
+            # Send emails
+            send_order_confirmation(Order)
+            send_admin_order_notification(Order)
+            
+            # Redirect to success page directly
+            return redirect(f'/payment_success/{Order.order_id}/')
+        else:
+            # Online Payment - Redirect to Stripe payment page
+            return redirect(f'/stripe_payment/{Order.order_id}/')
 
     return render(request, 'checkout.html')
 
@@ -80,8 +104,8 @@ def profile(request):
         messages.warning(request, "Login & Try Again")
         return redirect('/auth/login')
 
-    # Get current user orders
-    user_orders = Orders.objects.filter(email=request.user.email)
+    # Get current user orders in reverse order by order_id (newest first)
+    user_orders = Orders.objects.filter(email=request.user.email).order_by('-order_id')
 
     context = {
         'orders': user_orders
@@ -104,6 +128,10 @@ def send_order_confirmation(order):
         except json.JSONDecodeError as e:
             items = {}
         
+        # Determine payment method from status
+        is_cod = order.paymentstatus == 'COD'
+        payment_method = 'Cash on Delivery' if is_cod else 'Online Payment'
+        
         # Create HTML context for email template
         context = {
             'order': order,
@@ -112,7 +140,10 @@ def send_order_confirmation(order):
             'transaction_id': order.oid if order.oid else 'N/A',
             'amount': order.amount,
             'date': datetime.now().strftime("%B %d, %Y at %I:%M %p"),
-            'address': f"{order.address1}, {order.address2 if order.address2 else ''}, {order.city}, {order.state} - {order.zip_code}"
+            'address': f"{order.address1}, {order.address2 if order.address2 else ''}, {order.city}, {order.state} - {order.zip_code}",
+            'site_url': settings.SITE_URL,  # Add the site URL from settings
+            'is_cod': is_cod,
+            'payment_method': payment_method
         }
         
         # Render email templates
@@ -196,6 +227,10 @@ def send_admin_order_notification(order):
         except json.JSONDecodeError as e:
             items = {}
         
+        # Determine payment method from status
+        is_cod = order.paymentstatus == 'COD'
+        payment_method = 'Cash on Delivery' if is_cod else 'Online Payment'
+        
         # Create HTML context for email template
         context = {
             'order': order,
@@ -206,7 +241,9 @@ def send_admin_order_notification(order):
             'transaction_id': order.oid if order.oid else 'N/A',
             'amount': order.amount,
             'date': datetime.now().strftime("%B %d, %Y at %I:%M %p"),
-            'address': f"{order.address1}, {order.address2 if order.address2 else ''}, {order.city}, {order.state} - {order.zip_code}"
+            'address': f"{order.address1}, {order.address2 if order.address2 else ''}, {order.city}, {order.state} - {order.zip_code}",
+            'is_cod': is_cod,
+            'payment_method': payment_method
         }
         
         # Render email templates
@@ -214,6 +251,7 @@ def send_admin_order_notification(order):
             html_message = render_to_string('email_admin_notification.html', context)
             plain_message = strip_tags(html_message)
         except Exception as template_error:
+            print(f"Template error: {template_error}")
             return False
         
         # Send email
@@ -251,6 +289,9 @@ def send_admin_order_notification(order):
             message.attach(MIMEText(plain_message, "plain"))
             message.attach(MIMEText(html_message, "html"))
             
+            # Add Reply-To header with customer's email
+            message["Reply-To"] = order.email
+            
             # Send email
             connection.sendmail(from_email, [admin_email], message.as_string())
             connection.quit()
@@ -258,6 +299,7 @@ def send_admin_order_notification(order):
             return True
             
         except Exception as e:
+            print(f"Email sending error: {e}")
             # Fallback to Django's send_mail
             try:
                 result = send_mail(
@@ -266,10 +308,12 @@ def send_admin_order_notification(order):
                     from_email, 
                     [admin_email], 
                     html_message=html_message,
-                    fail_silently=False
+                    fail_silently=False,
+                    headers={'Reply-To': order.email}
                 )
                 return result > 0
             except Exception as django_error:
+                print(f"Django email error: {django_error}")
                 return False
     except Exception as outer_error:
         import traceback
@@ -364,12 +408,16 @@ def payment_success(request, order_id):
         if order.email != request.user.email:
             messages.warning(request, "Access Denied")
             return redirect('/')
-            
+        
+        is_cod = order.paymentstatus == 'COD'
+        
         context = {
             'order_id': order_id,
             'amount': order.amount,
-            'transaction_id': order.oid,
-            'email': order.email
+            'transaction_id': order.oid if order.oid else 'N/A',
+            'email': order.email,
+            'is_cod': is_cod,
+            'payment_method': 'Cash on Delivery' if is_cod else 'Online Payment'
         }
         
         return render(request, 'payment_success.html', context)

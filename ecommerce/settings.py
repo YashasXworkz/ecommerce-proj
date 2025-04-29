@@ -14,6 +14,7 @@ from pathlib import Path
 from django.contrib import messages
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 # Load environment variables from .env file
 load_dotenv()
@@ -88,28 +89,37 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# Use MongoDB in production (Render) and SQLite locally
-if os.getenv('MONGODB_URI'):
-    # MongoDB Atlas Configuration
+# Use PostgreSQL in production (Render) and SQLite locally
+if os.getenv('DATABASE_URL'):
+    # PostgreSQL configuration from environment variable
     DATABASES = {
-        'default': {
-            'ENGINE': 'djongo',
-            'NAME': 'ecommerce_db',
-            'CLIENT': {
-                'host': os.getenv('MONGODB_URI'),
-                'ssl': True,
-                'retryWrites': True,
-            }
-        }
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
 else:
-    # Local SQLite Configuration
+    # Local development PostgreSQL configuration
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'ecommerce_db'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
+    
+    # Fallback to SQLite if PostgreSQL isn't available
+    if os.getenv('USE_SQLITE', 'False').lower() == 'true':
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 
 # Cloudinary settings
 CLOUDINARY_STORAGE = {

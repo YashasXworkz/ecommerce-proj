@@ -110,6 +110,33 @@ Checkout
         </div>
       </div>
 
+      <!-- Payment Method Selection -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 12px; font-weight: 600;">Payment Method</label>
+        <div style="display: flex; gap: 15px;">
+          <div
+            style="display: flex; align-items: center; background-color: rgba(255, 255, 255, 0.1); padding: 12px 15px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.2); flex: 1; cursor: pointer;"
+            onclick="selectPaymentMethod('cod')">
+            <input type="radio" id="payment_cod" name="payment_method" value="cod" style="margin-right: 10px;" checked>
+            <div>
+              <label for="payment_cod"
+                style="font-weight: 500; cursor: pointer; margin-bottom: 2px; display: block;">Cash on Delivery</label>
+              <span style="font-size: 12px; opacity: 0.8;">Pay when your order arrives</span>
+            </div>
+          </div>
+          <div
+            style="display: flex; align-items: center; background-color: rgba(255, 255, 255, 0.1); padding: 12px 15px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.2); flex: 1; cursor: pointer;"
+            onclick="selectPaymentMethod('online')">
+            <input type="radio" id="payment_online" name="payment_method" value="online" style="margin-right: 10px;">
+            <div>
+              <label for="payment_online"
+                style="font-weight: 500; cursor: pointer; margin-bottom: 2px; display: block;">Online Payment</label>
+              <span style="font-size: 12px; opacity: 0.8;">Pay now with credit/debit card</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <button id="btn" type="submit"
         style="display: inline-block; font-weight: 500; text-align: center; white-space: nowrap; border: 1px solid transparent; padding: 12px 30px; font-size: 16px; line-height: 1.5; border-radius: 6px; background-color: #28a745; color: #fff; cursor: pointer; margin-top: 10px;">Place
         Order</button>
@@ -133,6 +160,24 @@ Checkout
   const djangoData = document.getElementById('django-data');
   const isAuthenticated = djangoData.dataset.userAuth === 'true';
   const userId = djangoData.dataset.userId;
+
+  // Payment method selection function
+  function selectPaymentMethod(method) {
+    // Update radio button selections
+    document.getElementById('payment_cod').checked = (method === 'cod');
+    document.getElementById('payment_online').checked = (method === 'online');
+
+    // Highlight the selected option
+    document.querySelectorAll('div[onclick^="selectPaymentMethod"]').forEach(div => {
+      if (div.getAttribute('onclick').includes(method)) {
+        div.style.borderColor = '#28a745';
+        div.style.boxShadow = '0 0 0 2px rgba(40, 167, 69, 0.25)';
+      } else {
+        div.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        div.style.boxShadow = 'none';
+      }
+    });
+  }
 
   // Use the same cart key system as in index.html
   const cartKey = isAuthenticated ? "cart_user_" + userId : "cart_guest";

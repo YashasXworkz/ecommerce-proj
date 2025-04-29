@@ -114,8 +114,12 @@
       <div class="order-details">
         <h2>Order Summary</h2>
         <p><strong>Order ID:</strong> #{{ order.order_id }}</p>
+        {% if payment_method != 'Cash on Delivery' and transaction_id != 'N/A' %}
         <p><strong>Transaction ID:</strong> {{ transaction_id }}</p>
+        {% endif %}
         <p><strong>Date:</strong> <span style="color: #3f51b5; font-weight: 500;">{{ date }}</span></p>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Payment Method:</strong> {{ payment_method }}</p>
 
         <h3>Items Ordered</h3>
         <table>
@@ -154,7 +158,7 @@
       <p>If you have any questions or need assistance, please don't hesitate to contact our customer service team.</p>
 
       <center>
-        <a href="http://127.0.0.1:8000/profile/" class="button">View Order Status</a>
+        <a href="{{ site_url|default:'https://shopcart.com' }}/profile/" class="button">View Order Status</a>
       </center>
 
       <p>Thank you for shopping with us!</p>

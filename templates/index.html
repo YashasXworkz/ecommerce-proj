@@ -162,8 +162,54 @@ Home
   // Use a user-specific cart key in localStorage
   const cartKey = isAuthenticated ? `cart_user_${userId}` : 'cart_guest';
 
+  // Function to check if URL has payment success parameter and clear cart
+  function checkAndClearCart() {
+    // Check if we just came from payment success
+    if (sessionStorage.getItem('payment_completed') === 'true') {
+      console.log("Payment was just completed, clearing all cart data");
+      // Clear ALL cart keys
+      localStorage.removeItem('cart');
+      localStorage.removeItem('cart_guest');
+      // Clear any user-specific cart
+      if (isAuthenticated) {
+        localStorage.removeItem(`cart_user_${userId}`);
+      }
+      // Remove the flag
+      sessionStorage.removeItem('payment_completed');
+      // Reset cart to empty
+      cart = {};
+      // Update cart display
+      document.getElementById('cart').innerHTML = "0";
+
+      // Reset all Add to Cart buttons
+      document.querySelectorAll('.card-actions').forEach(function (element) {
+        const productId = element.getAttribute('data-product-id');
+        if (productId) {
+          const divId = 'divpr' + productId;
+          const buttonDiv = document.getElementById(divId);
+          if (buttonDiv) {
+            buttonDiv.innerHTML = `
+              <button id="pr${productId}" class="btn-cart cart">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+              </button>
+              <a href="#" class="btn-view">
+                <i class="bi bi-eye"></i> View
+              </a>
+            `;
+          }
+        }
+      });
+
+      return true;
+    }
+    return false;
+  }
+
+  // Run cart check and clear if needed
+  const wasCartCleared = checkAndClearCart();
+
   // Find cart from local storage with user-specific key
-  if (localStorage.getItem(cartKey) == null) {
+  if (wasCartCleared || localStorage.getItem(cartKey) == null) {
     var cart = {};
   } else {
     cart = JSON.parse(localStorage.getItem(cartKey));
@@ -221,6 +267,10 @@ Home
                 </div>`;
     } else {
       for (var item in cart) {
+        // Safely get product name element
+        const nameElement = document.getElementById('namepr' + item.substring(2));
+        const productName = nameElement ? nameElement.innerHTML : 'Product';
+
         var itemPrice = parseFloat(cart[item][2].replace(/[^\d.-]/g, ''));
         var itemTotal = itemPrice * cart[item][0];
         total += itemTotal;
@@ -228,7 +278,7 @@ Home
         popStr += `
           <div class="cart-item">
             <div class="cart-item-name">
-              ${document.getElementById('namepr' + item.substring(2)).innerHTML.slice(0, 25)}${document.getElementById('namepr' + item.substring(2)).innerHTML.length > 25 ? '...' : ''}
+              ${productName.slice(0, 25)}${productName.length > 25 ? '...' : ''}
             </div>
             <div class="cart-item-details">
               <div class="cart-item-quantity">
@@ -261,9 +311,13 @@ Home
       </div>
     </div>`;
 
-    document.getElementById('popcart').setAttribute('data-content', popStr);
-    $('#popcart').popover('show');
-    document.getElementById("popcart").click();
+    // Safely update popover content
+    const popcartElement = document.getElementById('popcart');
+    if (popcartElement) {
+      popcartElement.setAttribute('data-content', popStr);
+      $('#popcart').popover('show');
+      popcartElement.click();
+    }
   }
 
   function clearCart() {
@@ -290,16 +344,19 @@ Home
     var sum = 0;
     for (var item in cart) {
       sum = sum + cart[item][0];
-      document.getElementById('divpr' + item.substring(2)).innerHTML = `
-        <div class="quantity-control">
-          <button id='minus${item}' class="btn-quantity minus" onclick="decrementQuantity('${item}')">-</button>
-          <span id='val${item}' class="quantity-display">${cart[item][0]}</span>
-          <button id='plus${item}' class="btn-quantity plus" onclick="incrementQuantity('${item}')">+</button>
-        </div>
-        <a href="#" class="btn-view">
-          <i class="bi bi-eye"></i> View
-        </a>
-      `;
+      const divElement = document.getElementById('divpr' + item.substring(2));
+      if (divElement) {
+        divElement.innerHTML = `
+          <div class="quantity-control">
+            <button id='minus${item}' class="btn-quantity minus" onclick="decrementQuantity('${item}')">-</button>
+            <span id='val${item}' class="quantity-display">${cart[item][0]}</span>
+            <button id='plus${item}' class="btn-quantity plus" onclick="incrementQuantity('${item}')">+</button>
+          </div>
+          <a href="#" class="btn-view">
+            <i class="bi bi-eye"></i> View
+          </a>
+        `;
+      }
     }
     localStorage.setItem(cartKey, JSON.stringify(cart));
     document.getElementById('cart').innerHTML = Object.keys(cart).length;

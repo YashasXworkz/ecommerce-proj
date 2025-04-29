@@ -90,14 +90,17 @@
       <h3>Order Details</h3>
       <p><strong>Order Number:</strong> #{{ order.order_id }}</p>
       <p><strong>Date:</strong> {{ date }}</p>
+      <p><strong>Payment Method:</strong> {{ payment_method }}</p>
+      {% if payment_method != 'Cash on Delivery' and transaction_id != 'N/A' %}
       <p><strong>Transaction ID:</strong> {{ transaction_id }}</p>
+      {% endif %}
       <p><strong>Total Amount:</strong> <span class="highlight">₹{{ amount }}</span></p>
     </div>
 
     <div class="shipping-info">
       <h3>Customer Information</h3>
       <p><strong>Name:</strong> {{ name }}</p>
-      <p><strong>Email:</strong> {{ customer_email }}</p>
+      <p><strong>Email:</strong> {{ email }}</p>
       <p><strong>Phone:</strong> {{ phone }}</p>
       <p><strong>Shipping Address:</strong> {{ address }}</p>
     </div>

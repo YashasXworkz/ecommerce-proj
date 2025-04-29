@@ -9,7 +9,12 @@
     <div class="success-content">
       <h2 class="success-title">Payment Successful!</h2>
       <p class="success-text">
+        {% if is_cod %}
+        Your order for <strong>Rs. {{ amount }}</strong> has been placed successfully.
+        Payment will be collected upon delivery.
+        {% else %}
         Your payment of <strong>Rs. {{ amount }}</strong> has been processed successfully.
+        {% endif %}
       </p>
       <div class="success-details">
         <p class="success-info">
@@ -17,13 +22,19 @@
           <span class="detail-value">{{ order_id }}</span>
         </p>
         <p class="success-info">
+          <span class="detail-label">Payment Method:</span>
+          <span class="detail-value">{{ payment_method }}</span>
+        </p>
+        {% if not is_cod %}
+        <p class="success-info">
           <span class="detail-label">Transaction ID:</span>
           <span class="detail-value">{{ transaction_id }}</span>
         </p>
+        {% endif %}
       </div>
       <div class="success-actions">
-        <a href="/" class="btn btn-primary">Continue Shopping</a>
-        <a href="/profile/" class="btn btn-outline-light">View Order</a>
+        <a href="{% url 'index' %}" class="btn btn-primary">Continue Shopping</a>
+        <a href="{% url 'Profile' %}" class="btn btn-outline-light">View Order</a>
       </div>
     </div>
   </div>
@@ -41,8 +52,8 @@
     background-color: #2c4368;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    padding: 2rem;
-    max-width: 480px;
+    padding: 2.5rem;
+    max-width: 520px;
     width: 100%;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -62,14 +73,14 @@
   }
 
   .success-icon {
-    font-size: 5rem;
+    font-size: 6rem;
     color: #28a745;
     margin-bottom: 1.5rem;
     animation: scaleIn 0.5s ease 0.3s both;
   }
 
   .success-icon i {
-    font-size: 5rem;
+    font-size: 6rem;
     display: inline-block;
     animation: pulse 2s infinite;
   }
@@ -102,31 +113,32 @@
 
   .success-title {
     color: #fff;
-    font-size: 1.75rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .success-text {
     color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
   }
 
   .success-details {
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.25rem;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
   }
 
   .success-info {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.7rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.9rem;
+    font-size: 1.2rem;
   }
 
   .success-info:last-child {
@@ -137,6 +149,7 @@
 
   .detail-label {
     color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
   }
 
   .detail-value {
@@ -145,20 +158,21 @@
     font-weight: 500;
     letter-spacing: 0.5px;
     word-break: break-all;
+    font-size: 1.2rem;
   }
 
   .success-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
     justify-content: center;
-    margin-top: 1.5rem;
+    margin-top: 1.8rem;
   }
 
   .btn {
-    padding: 0.6rem 1.25rem;
+    padding: 0.8rem 1.5rem;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     transition: all 0.3s ease;
   }
 
@@ -189,10 +203,31 @@
 <script>
   // Clear the cart from local storage
   document.addEventListener('DOMContentLoaded', function () {
-    // Clear the cart
+    // Get Django template values from data attributes
+    const djangoData = document.getElementById('django-data');
+    const isAuthenticated = djangoData ? djangoData.dataset.userAuth === 'true' : false;
+    const userId = djangoData ? djangoData.dataset.userId : '';
+
+    // Use the same cart key system as in index.html and checkout.html
+    const cartKey = isAuthenticated ? `cart_user_${userId}` : 'cart_guest';
+
+    // Clear both the old cart key and the user-specific cart key
     if (localStorage.getItem('cart')) {
       localStorage.removeItem('cart');
     }
+
+    if (localStorage.getItem(cartKey)) {
+      localStorage.removeItem(cartKey);
+    }
+
+    // Clear any lingering cart data
+    localStorage.removeItem('cart_guest');
+
+    // Set a flag in sessionStorage that payment was completed
+    // This will be checked by index.html to ensure cart is cleared there too
+    sessionStorage.setItem('payment_completed', 'true');
+
+    console.log("Cart cleared successfully");
 
     // Update the cart indicator in the navbar
     document.dispatchEvent(new CustomEvent('cart-updated'));

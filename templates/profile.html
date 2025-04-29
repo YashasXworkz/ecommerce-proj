@@ -28,7 +28,7 @@
       <div class="order-card">
         <div class="order-header">
           <div class="order-id">Order #{{ order.order_id }}</div>
-          <div class="order-date">{{ order.timestamp|date:"F j, Y" }}</div>
+          <div class="order-date">Recent Order</div>
         </div>
         <div class="order-body">
           <div class="order-details-container">
@@ -48,10 +48,12 @@
 
             <div class="transaction-shipping-row">
               <div class="transaction-col">
+                {% if order.paymentstatus != 'COD' %}
                 <div class="detail-item no-border">
                   <span class="detail-label">Transaction ID:</span>
                   <span class="detail-value transaction-id">{{ order.oid|default:"-" }}</span>
                 </div>
+                {% endif %}
               </div>
               <div class="shipping-col">
                 <div class="shipping-container">
@@ -137,7 +139,8 @@
     border-radius: 10px;
     overflow: hidden;
     transition: transform 0.3s ease;
-    max-width: 550px;
+    width: 550px;
+    max-width: 100%;
     margin: 0 auto 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
@@ -198,11 +201,13 @@
   .transaction-shipping-row {
     display: flex;
     margin-top: 10px;
+    min-height: 120px;
   }
 
   .transaction-col {
     flex: 0.4;
     padding-right: 15px;
+    min-height: 30px;
   }
 
   .shipping-col {
@@ -212,7 +217,6 @@
   }
 
   .shipping-container {
-    flex: 0.6;
     padding-left: 15px;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
   }
