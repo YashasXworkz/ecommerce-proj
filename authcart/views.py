@@ -36,9 +36,9 @@ def signup(request):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = generate_token.make_token(user)
         
-        # Force local development URL for testing
-        domain = '127.0.0.1:8000'
-        protocol = 'http'
+        # Get domain from settings
+        domain = settings.SITE_DOMAIN
+        protocol = 'https' if not settings.DEBUG else 'http'
             
         activation_link = f"{protocol}://{domain}/auth/activate/{uid}/{token}"
         
