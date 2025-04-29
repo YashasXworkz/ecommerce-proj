@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
 class Contact(models.Model):
@@ -17,7 +18,7 @@ class Product(models.Model):
     subcategory = models.CharField(max_length=50, default="")
     price = models.IntegerField(default=0)
     desc = models.CharField(max_length=300)
-    image = models.ImageField(upload_to='product_images')
+    image = CloudinaryField('image')
 
     def __str__(self):
         return self.product_name

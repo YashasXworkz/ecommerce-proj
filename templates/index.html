@@ -103,7 +103,7 @@ Home
       <div class="col-md-3 col-sm-6 mb-4">
         <div class="product-card">
           <div class="product-img">
-            <img src="/media/{{i.image}}" alt="{{i.product_name}}" />
+            <img src="{{i.image.url}}" alt="{{i.product_name}}" />
           </div>
           <div class="card-body">
             <h5 class="product-title" id="namepr{{i.id}}">{{i.product_name}}</h5>
@@ -114,7 +114,7 @@ Home
               <button id="pr{{i.id}}" class="btn-cart cart">
                 <i class="bi bi-cart-plus"></i> Add to Cart
               </button>
-              <a href="/media/{{i.image}}" class="btn-view">
+              <a href="{{i.image.url}}" class="btn-view">
                 <i class="bi bi-eye"></i> View
               </a>
             </div>
@@ -273,7 +273,7 @@ Home
         <button id="${item}" class="btn-cart cart">
           <i class="bi bi-cart-plus"></i> Add to Cart
         </button>
-        <a href="/media/${item.substring(2)}" class="btn-view">
+        <a href="#" class="btn-view">
           <i class="bi bi-eye"></i> View
         </a>
       `;
@@ -296,7 +296,7 @@ Home
           <span id='val${item}' class="quantity-display">${cart[item][0]}</span>
           <button id='plus${item}' class="btn-quantity plus" onclick="incrementQuantity('${item}')">+</button>
         </div>
-        <a href="/media/${cart[item][1]}" class="btn-view">
+        <a href="#" class="btn-view">
           <i class="bi bi-eye"></i> View
         </a>
       `;
@@ -320,7 +320,7 @@ Home
           <button id="pr${item.substring(2)}" class="btn-cart cart">
             <i class="bi bi-cart-plus"></i> Add to Cart
           </button>
-          <a href="/media/${item.substring(2)}" class="btn-view">
+          <a href="#" class="btn-view">
             <i class="bi bi-eye"></i> View
           </a>
         `;

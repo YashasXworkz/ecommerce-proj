@@ -8,6 +8,7 @@ from .utils import TokenGenerator,generate_token
 from django.utils.encoding import force_bytes,force_str,DjangoUnicodeDecodeError
 from django.core.mail import EmailMessage
 from django.conf import settings
+import os
 
 
 from django.contrib.auth import authenticate,login,logout
@@ -34,8 +35,11 @@ def signup(request):
         # Generate activation link
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = generate_token.make_token(user)
-        domain = getattr(settings, 'SITE_DOMAIN', '127.0.0.1:8000')
-        protocol = 'https' if domain != '127.0.0.1:8000' else 'http'
+        
+        # Force local development URL for testing
+        domain = '127.0.0.1:8000'
+        protocol = 'http'
+            
         activation_link = f"{protocol}://{domain}/auth/activate/{uid}/{token}"
         
         # Pass the activation link directly to the template
